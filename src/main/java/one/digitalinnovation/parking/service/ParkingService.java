@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import one.digitalinnovation.parking.exception.ParkingNotFoundException;
@@ -21,19 +20,15 @@ public class ParkingService {
         this.parkingRepository = parkingRepository;
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public List<Parking> findAll() {
         return parkingRepository.findAll();
     }
 
-    private static String getUUID() {
-        return UUID.randomUUID().toString().replace("-", "");
-    }
-
     @Transactional(readOnly = true)
     public Parking findById(String id) {
-        return parkingRepository.findById(id).orElseThrow(() ->
-                new ParkingNotFoundException(id));
+        return parkingRepository.findById(id).orElseThrow(
+                () -> new ParkingNotFoundException(id));
     }
 
     @Transactional
@@ -67,8 +62,10 @@ public class ParkingService {
         Parking parking = findById(id);
         parking.setExitDate(LocalDateTime.now());
         parking.setBill(ParkingCheckOut.getBill(parking));
-        parkingRepository.save(parking);
-        return parking;
+        return parkingRepository.save(parking);
     }
 
+    private static String getUUID() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
 }
